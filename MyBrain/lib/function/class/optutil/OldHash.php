@@ -13,13 +13,13 @@ class OldHash implements BasicHash
 	 * @see BasicHash::hash()
 	 * @deprecated only here as example and for backward compatibility!
 	 */
-	public function hash($input, $salt)
+	public static function hash($input, $salt)
 	{
-		$key = crypt($input,$salt); # Hashing
+		$key = crypt($input, $salt); # Hashing
 		# blew up
-		for($i=0; $i<=10; $i++)
+		for($i = 0; $i <= 10; $i++)
 		{
-		$key=crypt($key,$salt.$i);
+			$key = crypt($key, $salt.$i);
 		}
 		return $key;
 	}
