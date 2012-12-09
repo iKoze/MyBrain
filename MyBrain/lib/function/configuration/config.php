@@ -26,7 +26,7 @@ AutoLoad::addPath('interface');
 AutoLoad::register();
 
 // Use databases.
-$dbholder = new DatabaseHolder();
+$dbholder = new InstanceHolder('BasicDatabase');
 
 // Register the database holder.
 $this->registerModule('dbholder', $dbholder);

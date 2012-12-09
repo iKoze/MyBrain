@@ -5,6 +5,7 @@
  * Dev-start: 9.12.2012.
  * @author Florian Schiessl <florian@floriware.de>
  * @version 0.1
+ * @deprecated use InstanceHolder instead!
  */
 class DatabaseHolder
 {
