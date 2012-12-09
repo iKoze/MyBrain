@@ -8,8 +8,6 @@
  */
 interface BasicDatabase
 {
-	public function __construct();
-	
 	/**
 	 * Get value by resource locator.
 	 * @param string $resource_locator: Resource locator string.
@@ -28,6 +26,4 @@ interface BasicDatabase
 	 * @example setValue('path.to.value', 'this is a test');
 	 */
 	public function setValue($resource_locator, $value);
-	
-	public function __destroy();
 }

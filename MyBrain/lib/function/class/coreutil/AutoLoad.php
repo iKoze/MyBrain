@@ -28,7 +28,7 @@ class AutoLoad
 	 */
 	public static function addPath($path)
 	{
-		array_push(self::paths, $path);
+		array_push(self::$paths, $path);
 	}
 	
 	/**
@@ -38,7 +38,7 @@ class AutoLoad
 	 */
 	public static function autoLoader($class)
 	{
-		foreach(self::paths as $path)
+		foreach(self::$paths as $path)
 		{
 			$expected_name = $path.DIRECTORY_SEPARATOR.$class.'.php';
 			if(file_exists($expected_name))

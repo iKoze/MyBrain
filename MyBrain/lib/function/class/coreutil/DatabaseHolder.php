@@ -24,7 +24,7 @@ class DatabaseHolder
 	{
 		if($database instanceof BasicDatabase && !isset($this->databases[$name]))
 		{
-			$this->databases = $database;
+			$this->databases[$name] = $database;
 			return true;
 		}
 		return false;

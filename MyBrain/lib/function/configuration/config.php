@@ -23,6 +23,7 @@ AutoLoad::addPath('class'.DS.'optutil');
 AutoLoad::addPath('class'.DS.'plugins');
 AutoLoad::addPath('configuration');
 AutoLoad::addPath('interface');
+AutoLoad::register();
 
 // Use databases.
 $dbholder = new DatabaseHolder();

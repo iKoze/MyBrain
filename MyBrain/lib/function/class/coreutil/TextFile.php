@@ -36,7 +36,7 @@ class TextFile
 	public function __construct($full_path = null, $read = false)
 	{
 		$this->setFullPath($full_path);
-		if($read = true)
+		if($read == true)
 		{
 			$this->read();
 		}
@@ -198,8 +198,7 @@ class TextFile
 	 */
 	public function exists()
 	{
-		global $full_path;
-		return file_exists($full_path);
+		return file_exists($this->full_path);
 	}
 	
 	/**

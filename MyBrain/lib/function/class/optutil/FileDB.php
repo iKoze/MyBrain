@@ -51,7 +51,7 @@ class FileDB implements BasicDatabase
 	 */
 	public function getValue($resource_locator)
 	{
-		$file = new TextFile(getSubPathByRl($resource_locator).$this->file_ending);
+		$file = new TextFile($this->getSubPathByRl($resource_locator).$this->file_ending);
 		if($file->exists())
 		{
 			$file->read();
@@ -73,13 +73,13 @@ class FileDB implements BasicDatabase
 	 */
 	public function setValue($resource_locator, $value)
 	{
-		$rl_array = getSubRlArray($resource_locator);
+		$rl_array = $this->getSubRlArray($resource_locator);
 		foreach($rl_array as $i => $node)
 		{
-			if($i == count($resource_locator) - 1)
+			if($i == count($rl_array) - 1)
 			{
 				// last node
-				$filename = getSubPathByRl($resource_locator).$this->file_ending;
+				$filename = $this->getSubPathByRl($resource_locator).$this->file_ending;
 				$file = new TextFile($filename);
 				$file->setContent($value);
 				$file->write();
@@ -88,7 +88,7 @@ class FileDB implements BasicDatabase
 			else
 			{
 				// other nodes
-				$filename = getSubPathByRl($resource_locator, $i);
+				$filename = $this->getSubPathByRl($resource_locator, $i);
 				if(file_exists($filename))
 				{
 					if(!is_dir($filename))
@@ -146,12 +146,12 @@ class FileDB implements BasicDatabase
 	 * 
 	 * @example
 	 * $root = /var/db
-	 * $ex = getSubPathByRl('path.to.value', 1);
+	 * $ex = $this->getSubPathByRl('path.to.value', 1);
 	 * echo $ex; // /var/db/path/to
 	 */
 	public function getSubPathByRl($resource_locator, $node = -1)
 	{
-		return $this->root.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR,getSubRlArray($resource_locator,$node));
+		return $this->root.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR,$this->getSubRlArray($resource_locator,$node));
 	}
 	
 	/**
@@ -173,7 +173,7 @@ class FileDB implements BasicDatabase
 		}
 		else
 		{
-			$parts = getSubRlArray($resource_locator, $node);
+			$parts = $this->getSubRlArray($resource_locator, $node);
 			$last_part = count($parts) - 1;
 			$new_rl = '';
 			for($i = 0; $i <= $last_part; $i++)
