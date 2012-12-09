@@ -16,19 +16,13 @@ define('DS',DIRECTORY_SEPARATOR);
 // Load Autoloader's class.
 require_once 'class'.DS.'coreutil'.DS.'AutoLoad.php';
 
-// Create new autoloader.
-$autoloader = new AutoLoad();
-
 // Prime the autoloader with knowledge of our include paths.
-$autoloader->addPath('class');
-$autoloader->addPath('class'.DS.'coreutil');
-$autoloader->addPath('class'.DS.'optutil');
-$autoloader->addPath('class'.DS.'plugins');
-$autoloader->addPath('configuration');
-$autoloader->addPath('interface');
-
-// register the autoloader.
-$this->registerModule('autoloader', $autoloader);
+AutoLoad::addPath('class');
+AutoLoad::addPath('class'.DS.'coreutil');
+AutoLoad::addPath('class'.DS.'optutil');
+AutoLoad::addPath('class'.DS.'plugins');
+AutoLoad::addPath('configuration');
+AutoLoad::addPath('interface');
 
 // Use databases.
 $dbholder = new DatabaseHolder();
