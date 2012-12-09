@@ -2,7 +2,8 @@
 /**
  * @name TextFile.php
  * Class for hanlding textfiles.
- * @author Florian Schiessl
+ * Dev-start: 2.12.2012.
+ * @author Florian Schiessl <florian@floriware.de>
  * @version 0.1
  */
 class TextFile
@@ -25,6 +26,13 @@ class TextFile
 	 */
 	protected $is_saved = false;
 	
+	/**
+	 * New File.
+	 * @param string $full_path:
+	 * Path to file.
+	 * @param boolean $read:
+	 * Read the file or do it manually later. (Default: later)
+	 */
 	public function __construct($full_path = null, $read = false)
 	{
 		$this->setFullPath($full_path);
@@ -64,7 +72,7 @@ class TextFile
 	}
 	
 	/**
-	 * Sets the folder of file.
+	 * Sets the folder of file. Without trailing slash.
 	 * Name remains unchanged.
 	 * @param string $new_folder
 	 */
@@ -126,6 +134,14 @@ class TextFile
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Alias for write()
+	 */
+	public function save()
+	{
+		$this->write();
 	}
 	
 	/**
