@@ -43,7 +43,7 @@ class FileDB implements BasicDatabase
 	/**
 	 * Get value by resource locator.
 	 * @param string $resource_locator: Resource locator string.
-	 * @return string $file_content: on success. || boolean false: on error.
+	 * @return string $value: on success. || boolean false: on error.
 	 * @see BasicDatabase::getValue()
 	 * @example
 	 * $ex = getValue('path.to.value');
@@ -64,14 +64,30 @@ class FileDB implements BasicDatabase
 	}
 	
 	/**
-	 * Set value by resource locator.
+	 * Get object by resource locator.
+	 * @param string $resource_locator: Resource locator string.
+	 * @return mixed $value: on success. || boolean false: on error.
+	 * @see BasicDatabase::getObject()
+	 */
+	public function getObject($resource_locator)
+	{
+		$result = $this->getValue($resource_locator);
+		if($result !== false)
+		{
+			return json_decode($result);
+		}
+		return false;
+	}
+	
+	/**
+	 * Save value by resource locator.
 	 * @param string $resource_locator: Resource locator string.
 	 * @param string $value: Set field to $value.
 	 * @return boolean $success: True on success, false on error.
 	 * @see BasicDatabase::setValue()
 	 * @example setValue('path.to.value', 'this is a test');
 	 */
-	public function setValue($resource_locator, $value)
+	public function saveValue($resource_locator, $value)
 	{
 		$rl_array = $this->getSubRlArray($resource_locator);
 		foreach($rl_array as $i => $node)
@@ -104,6 +120,17 @@ class FileDB implements BasicDatabase
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Save object by resource locator. Object will be saved as JSON in File of resource Locator.
+	 * @param string $resource_locator: Resource locator string.
+	 * @param mixed $object: Object to save.
+	 * @see BasicDatabase::saveObject()
+	 */
+	public function saveObject($resource_locator, $object)
+	{
+		return $this->saveValue($resource_locator, json_encode($object));
 	}
 	
 	/**

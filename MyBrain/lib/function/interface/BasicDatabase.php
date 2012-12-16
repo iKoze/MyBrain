@@ -11,7 +11,7 @@ interface BasicDatabase
 	/**
 	 * Get value by resource locator.
 	 * @param string $resource_locator: Resource locator string.
-	 * @return string $file_content: on success. || boolean false: on error.
+	 * @return string $value: on success. || boolean false: on error.
 	 * @example
 	 * $ex = getValue('path.to.value');
 	 * echo $ex; // 'this is a test' (See setValue())
@@ -19,11 +19,24 @@ interface BasicDatabase
 	public function getValue($resource_locator);
 	
 	/**
-	 * Set value by resource locator.
+	 * Save value by resource locator.
 	 * @param string $resource_locator: Resource locator string.
 	 * @param string $value: Set field to $value.
 	 * @return boolean $success: True on success, false on error.
 	 * @example setValue('path.to.value', 'this is a test');
 	 */
-	public function setValue($resource_locator, $value);
+	public function saveValue($resource_locator, $value);
+	
+	/**
+	 * Get object by resource locator.
+	 * @param string $resource_locator: Resource locator string.
+	 */
+	public function getObject($resource_locator);
+	
+	/**
+	 * Save object by resource locator.
+	 * @param string $resource_locator: Resource locator string.
+	 * @param mixed $object: The object to save.
+	 */
+	public function saveObject($resource_locator, $object);
 }
