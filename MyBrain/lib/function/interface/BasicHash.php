@@ -15,4 +15,10 @@ interface BasicHash
 	 * @return string $hash
 	 */
 	public static function hash($input, $salt);
+	
+	/**
+	 * Generate a suitable salt for the hash() function.
+	 * @return string $salt
+	 */
+	public static function generateSalt();
 }

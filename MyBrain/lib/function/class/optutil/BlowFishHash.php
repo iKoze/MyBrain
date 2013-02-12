@@ -18,4 +18,14 @@ class BlowFishHash implements BasicHash
 		$cryptsalt = '$2a$11$'.$salt.'$';
 		return crypt($input, $cryptsalt);
 	}
+	
+	/**
+	 * @see BasicHash::generateSalt()
+	 * @return string $salt
+	 */
+	public static function generateSalt()
+	{
+		// TODO Do something more useful here. This is just for testing.
+		return "rkcurksotmhgqrynda74up";
+	}
 }

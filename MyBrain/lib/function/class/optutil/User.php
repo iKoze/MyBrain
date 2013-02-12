@@ -1,181 +1,132 @@
 <?php
+/**
+ * @name User.php
+ * The user's object
+ * Dev-start: 12.2.2013
+ * @author Florian Schiessl <florian@floriware.de>
+ * @version 0.1
+ */
 class User
 {
 	/**
-	 * Whether the user is authenticated or not
-	 * @var boolean $authenticated
-	 */
-	protected $authenticated = false;
-	
-	/**
-	 * The User ID
+	 * The Users ID
 	 * @var string $uid
 	 */
 	protected $uid;
 	
 	/**
-	 * Authentication Methods
-	 * @var array $auth_methods
-	 * @example
-	 * $auth_methods['auth_passdb'] = true;
+	 * The user management object, responsible for this user.
+	 * @var UserManagement $manager
 	 */
-	protected $auth_methods;
+	protected $manager;
 	
 	/**
-	 * User Properties
-	 * @var array $properties
-	 * @example
-	 * $properties['email'][0] = true; // Information is private.<br>
-	 * $properties['email'][1] = 'test(at)example.com'; // Information itself.
+	 * The authentication method used for this user.
+	 * @var BasicAuthentication $auth_method
 	 */
-	protected $properties;
+	protected $auth_method;
 	
 	/**
-	 * New User
+	 * The user's private database. Save user-associated data here.
+	 * @var BasicDatabase $database
+	 */
+	protected $database;
+	
+	/**
+	 * A new user object.
 	 * @param string $uid
-	 * User ID
+	 * @param UserManagement $manager: The user management object, responsible for this user.
 	 */
-	public function __construct($uid)
+	public function __construct($uid, UserManagement $manager)
 	{
 		$this->uid = $uid;
+		$this->manager = $manager;
 	}
 	
 	/**
-	 * Adds authentication method. 
-	 * @param string $auth_name
-	 * Class-Name of auth method.
-	 * @param boolean $enabled
-	 * Enabled? (Default: false)
+	 * Get the user's id
+	 * @return string $uid
 	 */
-	public function addAuthMethod($auth_name, $enabled = false)
+	public function getUid()
 	{
-		$this->auth_methods[$auth_name] = $enabled;
+		return $this->uid;
 	}
 	
 	/**
-	 * Enables authentication method
-	 * @param string $auth_name
-	 * Class-Name of auth method.
+	 * Set the users authentication method.
+	 * @param BasicAuthentication $auth_method
 	 */
-	public function enableAuthMethod($auth_name)
+	public function setAuthMethod(BasicAuthentication $auth_method)
 	{
-		$this->auth_methods[$auth_name] = true;
+		$this->auth_method = $auth_method;
 	}
 	
 	/**
-	 * Disables authentication method
-	 * @param string $auth_name
-	 * Class-Name of auth method.
+	 * Get the user's authentication method name.
+	 * @return string
 	 */
-	public function disableAuthMethod($auth_name)
+	public function getAuthMethodName()
 	{
-		$this->auth_methods[$auth_name] = false;
+		return get_class($this->auth_method);
 	}
 	
 	/**
-	 * Removes authentication method
-	 * @param string $auth_name
-	 * Class-Name of auth method.
+	 * Check, if provided $password is valid for this user.
+	 * @param string $password
 	 */
-	public function removeAuthMethod($auth_name)
+	public function authenticate($password)
 	{
-		unset($this->auth_methods[$auth_name]);
+		return $this->auth_method->authenticate($this->uid, $password);
 	}
 	
 	/**
-	 * Authenticates User
-	 * @param BasicAuthentication $auth
-	 * Authentication Object.
-	 * @param string $token
-	 * Token for Authentication Object. May be Password or Session ID
-	 * @return boolean: success.
-	 */
-	public function authenticate(BasicAuthentication $auth, $token)
-	{
-		if(isset($this->auth_methods[get_class($auth)]) && $this->auth_methods[get_class($auth)] === true)
-		{
-			// Auth method allowed
-			if($auth->authenticate($this->uid, $token))
-			{
-				$this->authenticated = true;
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * Returns whether user is authenticated or not.
-	 * @return boolean
-	 */
-	public function isAuthenticated()
-	{
-		return $this->authenticated;
-	}
-	
-	/**
-	 * Revokes Authentication.
-	 */
-	public function revokeAuthentication()
-	{
-		$this->authenticated = false;
-	}
-	
-	/**
-	 * Change User ID.
-	 * @param string $new_uid
-	 * @return boolean success
-	 */
-	public function changeUID($new_uid)
-	{
-		if($this->isAuthenticated())
-		{
-			$this->uid = $new_uid;
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Change or add property to user
-	 * @param string $prop_name
-	 * Name of the property
-	 * @param boolean $private
-	 * Is the property private?
-	 * @param string $content
-	 * Content of the property
+	 * Set a new Password for this user. (If provided by AuthMethod)
+	 * @param string $new_password
 	 * @return boolean $success
 	 */
-	public function changeProperty($prop_name, $private, $content)
+	public function setPassword($new_password)
 	{
-		if($this->isAuthenticated())
+		if(method_exists($this->auth_method, 'setPassword'))
 		{
-			$this->properties[$prop_name][0] = $private;
-			$this->properties[$prop_name][1] = $content;
-			return true;
+			return $this->auth_method->setPassword($this->uid, $new_password);
 		}
 		return false;
 	}
 	
 	/**
-	 * Get property by name
-	 * @param string $prop_name
-	 * @return string $content || false if not authenticated and private.
+	 * Set the user's private database.
+	 * @param BasicDatabase $userdb
 	 */
-	public function getProperty($prop_name)
+	public function setDatabase(BasicDatabase $userdb)
 	{
-		if($this->isAuthenticated() || $this->properties[$prop_name][0] === false)
-		{
-			return $this->properties[$prop_name][1];
-		}
-		return false;
+		$this->database = $userdb;
 	}
 	
 	/**
-	 * Revoke Authentication for this Object, before destroying it.
+	 * Get the user's private database.
+	 * @return BasicDatabase
+	 */
+	public function getDatabase()
+	{
+		return $this->database;
+	}
+	
+	/**
+	 * Save the users basic settings back to userdb using the manager.
+	 * Currently only necessary after change of AuthMethod.
+	 * @see UserManagement.php: function SaveMe()
+	 * @return boolean $success.
+	 */
+	public function save()
+	{
+		return $this->manager->saveMe($this);
+	}
+	
+	/**
+	 * Save the user before loosing all it's settings.
 	 */
 	public function __destruct()
 	{
-		$this->revokeAuthentication();
+		$this->save();
 	}
 }

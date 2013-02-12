@@ -39,4 +39,10 @@ interface BasicDatabase
 	 * @param mixed $object: The object to save.
 	 */
 	public function saveObject($resource_locator, $object);
+	
+	/**
+	 * Get the separator for resource locator.
+	 * @return string $separator.
+	 */
+	public function getSeparator();
 }

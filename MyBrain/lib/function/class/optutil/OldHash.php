@@ -23,4 +23,14 @@ class OldHash implements BasicHash
 		}
 		return $key;
 	}
+	
+	/**
+	 * @see BasicHash::generateSalt()
+	 * @return string $salt
+	 */
+	public static function generateSalt()
+	{
+		// TODO Do something more useful here. This is just for testing.
+		return "rkcurksotmhgqrynda74up";
+	}
 }

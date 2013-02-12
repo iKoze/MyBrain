@@ -10,8 +10,8 @@ interface BasicAuthentication
 	/**
 	 * Authenticate User somewhere, somehow.
 	 * @param string $uid: The user ID.
-	 * @param string $token: May be the Password or Session-ID. 
+	 * @param string $pass: The Password.
 	 * @return boolean $success: true if successful.
 	 */
-	public function authenticate($uid, $token);
+	public function authenticate($uid, $pass);
 }

@@ -7,8 +7,11 @@
  * 
  * Dev-start: 9.12.2012.
  * @author Florian Schiessl <florian@floriware.de>
- * @version 0.1
+ * @version 0.2
  */
+
+// FileDB root
+$fdbroot = '/var/cms-test';
 
 // small shortcut to make things more easy.
 define('DS',DIRECTORY_SEPARATOR);
@@ -27,6 +30,19 @@ AutoLoad::register();
 
 // Use databases.
 $dbholder = new InstanceHolder('BasicDatabase');
+$authdb = new FileDB($fdbroot.DS.'AuthDB');
+$dbholder->addInstance('AuthDB', $authdb);
+$userdb = new FileDB($fdbroot.DS.'UserDB');
+$dbholder->addInstance('UserDB', $userdb);
 
-// Register the database holder.
+// Activate DBAuthentication
+$authholder = new InstanceHolder('BasicAuthentication');
+$authholder->addInstance('DBAuthentication', new DBAuthentication($authdb, 'BlowFishHash'));
+
+// Add UserManagement
+$usermanager = new UserManagement($userdb, $authholder);
+
+// Register the Modules to MyBrain
 $this->registerModule('dbholder', $dbholder);
+$this->registerModule('authholder', $authholder);
+$this->registerModule('UserManagement', $usermanager);
