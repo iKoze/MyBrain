@@ -48,7 +48,7 @@ class UserManagement
 	
 	/**
 	 * Get user by User ID
-	 * @param string $uid
+	 * @param number $uid
 	 * @return User $user || false on error
 	 */
 	public function getUserByUid($uid)
@@ -66,7 +66,7 @@ class UserManagement
 	
 	/**
 	 * Create new User object for existing by it's UID from database.
-	 * @param string $uid
+	 * @param number $uid
 	 * @return User $user
 	 */
 	protected function spawnUser($uid)
@@ -79,6 +79,83 @@ class UserManagement
 		$userdbpath = $this->userdb->getSubPathByRl($uid.$this->sep.'db');
 		$user->setDatabase(new FileDB($userdbpath));
 		return $user;
+	}
+	
+	/**
+	 * Get Username by UID
+	 * @param number $uid
+	 * @return string $username
+	 */
+	public function getUsernameByUid($uid)
+	{
+		$username = $this->getArraySortedByUid();
+		return $username[$uid];
+	}
+	
+	/**
+	 * Get User ID by Username
+	 * @param string $username
+	 * @return number $uid
+	 */
+	public function getUidByUsername($username)
+	{
+		$uid = $this->getArraySortedByUsername();
+		return $uid[$username];
+	}
+	
+	/**
+	 * Gets the next free User ID
+	 * @return number $free_uid
+	 */
+	public function getFreeUid()
+	{
+		$used = array_keys($this->getArraySortedByUid());
+		sort($used, SORT_NUMERIC);
+		return end($used) + 1;
+	}
+	
+	/**
+	 * Gets an array containing all uids, indexed by usernames
+	 * @return array $uid
+	 */
+	protected function getArraySortedByUsername()
+	{
+		$uid = array();
+		foreach($this->getUserIndexAsArray() as $line)
+		{
+			$uid[$line[1]] = $line[0];
+		}
+		return $uid;
+	}
+	
+	/**
+	 * Gets an array containing all usernames, indexed by uids.
+	 * @return array $username
+	 */
+	protected function getArraySortedByUid()
+	{
+		$username = array();
+		foreach($this->getUserIndexAsArray() as $line)
+		{
+			$username[$line[0]] = $line[1];
+		}
+		return $username;
+	}
+	
+	/**
+	 * Returns the user index as array.
+	 * @return array $userindex
+	 */
+	protected function getUserIndexAsArray()
+	{
+		$content = $this->userdb->getValue('users');
+		$userindex = array();
+		foreach($content as $line)
+		{
+			$cur = explode(';',$line);
+			array_push($userindex,$cur);
+		}
+		return $userindex;
 	}
 	
 	/**
