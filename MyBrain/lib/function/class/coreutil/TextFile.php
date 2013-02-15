@@ -4,7 +4,7 @@
  * Class for hanlding textfiles.
  * Dev-start: 2.12.2012.
  * @author Florian Schiessl <florian@floriware.de>
- * @version 0.1
+ * @version 0.2
  */
 class TextFile
 {
@@ -25,6 +25,12 @@ class TextFile
 	 * @var boolean $is_saved
 	 */
 	protected $is_saved = false;
+	
+	/**
+	 * If the file was read or not.
+	 * @var boolean $is_read
+	 */
+	protected $is_read = false;
 	
 	/**
 	 * New File.
@@ -109,12 +115,15 @@ class TextFile
 	 */
 	public function read()
 	{
-		//TODO: Allow only reading local Files
-		$file_content = file($this->full_path);
-		if($file_content !== false)
+		if($this->exists())
 		{
-			$this->content = $file_content;
-			return true;
+			$file_content = file_get_contents($this->full_path);
+			if($file_content !== false)
+			{
+				$this->content = explode("\n", $file_content);
+				$this->is_read = true;
+				return true;
+			}
 		}
 		return false;
 	}
@@ -130,6 +139,7 @@ class TextFile
 			if(file_put_contents($this->full_path, $this->content) !== false)
 			{
 				$this->is_saved = true;
+				$this->is_read = true;
 				return true;
 			}
 		}
@@ -208,5 +218,14 @@ class TextFile
 	public function isSaved()
 	{
 		return $this->is_saved;
+	}
+	
+	/**
+	 * Return whether the file was read or not.
+	 * @return boolean
+	 */
+	public function isRead()
+	{
+		return $this->is_read;
 	}
 }

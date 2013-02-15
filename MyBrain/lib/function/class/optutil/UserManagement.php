@@ -74,10 +74,7 @@ class UserManagement
 		$user = new User($uid, $this);
 		$auth_method = $this->userdb->getValue($uid.$this->sep.'auth_method');
 		$user->setAuthMethod($this->authholder->getInstane($auth_method));
-		
-		// TODO: This is ugly. Replace it by adding fancy chroot function to BasicDatabase
-		$userdbpath = $this->userdb->getSubPathByRl($uid.$this->sep.'db');
-		$user->setDatabase(new FileDB($userdbpath));
+		$user->setDatabase($this->userdb->chroot($uid.$this->sep.'db'));
 		return $user;
 	}
 	
@@ -148,7 +145,7 @@ class UserManagement
 	 */
 	protected function getUserIndexAsArray()
 	{
-		$content = $this->userdb->getValue('users');
+		$content = $this->userdb->getValueAsArray('users');
 		$userindex = array();
 		foreach($content as $line)
 		{

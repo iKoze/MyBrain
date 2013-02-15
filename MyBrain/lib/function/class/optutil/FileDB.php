@@ -5,7 +5,7 @@
  * @uses TextFile.php for handling text files.
  * Dev-start: 9.12.2012.
  * @author Florian Schiessl <florian@floriware.de>
- * @version 0.1
+ * @version 0.2
  */
 class FileDB implements BasicDatabase
 {
@@ -38,6 +38,7 @@ class FileDB implements BasicDatabase
 		$this->root = $root;
 		$this->file_ending = $file_ending;
 		$this->sep = $rl_separator;
+		//TODO add a function to validate the root. Like 'is existent' or 'has access'
 	}
 	
 	/**
@@ -51,16 +52,19 @@ class FileDB implements BasicDatabase
 	 */
 	public function getValue($resource_locator)
 	{
-		$file = new TextFile($this->getSubPathByRl($resource_locator).$this->file_ending);
-		if($file->exists())
-		{
-			$file->read();
-			return $file->getContent();
-		}
-		else
-		{
-			return false;
-		}
+		$file = new TextFile($this->getFileNameByRl($resource_locator));
+		return $file->read() !== false ? $file->getContent() : false;
+	}
+	
+	/**
+	 * Get value by resource locator as array.
+	 * One element/line in value
+	 * @see BasicDatabase::getValueAsArray()
+	 */
+	public function getValueAsArray($resource_locator)
+	{
+		$file = new TextFile($this->getFileNameByRl($resource_locator));
+		return $file->read() !== false ? $file->getContentAsArray() : false;
 	}
 	
 	/**
@@ -89,16 +93,103 @@ class FileDB implements BasicDatabase
 	 */
 	public function saveValue($resource_locator, $value)
 	{
+		if($this->createNodes($resource_locator))
+		{
+			$filename = $this->getFileNameByRl($resource_locator);
+			$file = new TextFile($filename);
+			$file->setContent($value);
+			return $file->write();
+		}
+		return false;
+	}
+	
+	/**
+	 * Save values from array by resource locator.
+	 * One element/line in value. Using newline (\n) in array values
+	 * WILL lead to newlines in value. Use saveObject() in order to
+	 * store Arrays.
+	 * @see BasicDatabase::saveValueFromArray()
+	 * @param string $resource_locator
+	 * @param string $value_array
+	 * @return boolean success
+	 */
+	public function saveValueFromArray($resource_locator, $value_array)
+	{
+		if($this->createNodes($resource_locator))
+		{
+			$filename = $this->getFileNameByRl($resource_locator);
+			$file = new TextFile($filename);
+			$file->setContentFromArray($value_array);
+			return $file->write();
+		}
+		return false;
+	}
+	
+	/**
+	 * Save object by resource locator. Object will be saved as JSON in File of resource Locator.
+	 * @param string $resource_locator: Resource locator string.
+	 * @param mixed $object: Object to save.
+	 * @see BasicDatabase::saveObject()
+	 */
+	public function saveObject($resource_locator, $object)
+	{
+		return $this->saveValue($resource_locator, json_encode($object));
+	}
+	
+	/**
+	 * Returns default resource locator separator.
+	 * @return string $sep: (Default: .)
+	 */
+	public function getSeparator()
+	{
+		return $this->sep;
+	}
+	
+	/**
+	 * Returns a new FileDB with given resource locator as root.
+	 * @see BasicDatabase::chroot()
+	 * @return FileDB $chrooted_filedb
+	 */
+	public function chroot($resource_locator)
+	{
+		$new_root = $this->getSubPathByRl($resource_locator);
+		return new FileDB($new_root);
+	}
+	
+	/**
+	 * Returns root path to database.
+	 * @return string $root
+	 * @example
+	 * $newDB = new FileDB('/var/db');
+	 * echo $newDB->getRoot(); // /var/db
+	 */
+	public function getRoot()
+	{
+		return $this->root;
+	}
+	
+	/**
+	 * Returns default file ending for textfiles.
+	 * @return string $file_ending: (Default: .txt)
+	 */
+	public function getFileEnding()
+	{
+		return $this->file_ending;
+	}
+	
+	/**
+	 * Creates sub folders needed for storing a file (if needed)
+	 * @param string $resource_locator
+	 * @return boolean $success
+	 */
+	public function createNodes($resource_locator)
+	{
 		$rl_array = $this->getSubRlArray($resource_locator);
 		foreach($rl_array as $i => $node)
 		{
 			if($i == count($rl_array) - 1)
 			{
 				// last node
-				$filename = $this->getSubPathByRl($resource_locator).$this->file_ending;
-				$file = new TextFile($filename);
-				$file->setContent($value);
-				$file->write();
 				return true;
 			}
 			else
@@ -123,44 +214,13 @@ class FileDB implements BasicDatabase
 	}
 	
 	/**
-	 * Save object by resource locator. Object will be saved as JSON in File of resource Locator.
-	 * @param string $resource_locator: Resource locator string.
-	 * @param mixed $object: Object to save.
-	 * @see BasicDatabase::saveObject()
+	 * Returns the filename matching given resource locator.
+	 * @param string $resource_locator
+	 * @return string $filename
 	 */
-	public function saveObject($resource_locator, $object)
+	public function getFileNameByRl($resource_locator)
 	{
-		return $this->saveValue($resource_locator, json_encode($object));
-	}
-	
-	/**
-	 * Returns root path to database.
-	 * @return string $root
-	 * @example
-	 * $newDB = new FileDB('/var/db');
-	 * echo $newDB->getRoot(); // /var/db
-	 */
-	public function getRoot()
-	{
-		return $this->root;
-	}
-	
-	/**
-	 * Returns default resource locator separator.
-	 * @return string $sep: (Default: .)
-	 */
-	public function getSeparator()
-	{
-		return $this->sep;
-	}
-	
-	/**
-	 * Returns default file ending for textfiles.
-	 * @return string $file_ending: (Default: .txt)
-	 */
-	public function getFileEnding()
-	{
-		return $this->file_ending;
+		return $this->getSubPathByRl($resource_locator).$this->file_ending;
 	}
 	
 	/**
