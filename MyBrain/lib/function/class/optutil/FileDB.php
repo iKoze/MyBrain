@@ -2,53 +2,47 @@
 /**
  * @name FileDB.php
  * Textfile based Database
+ * The resource locator is used to get or set values, which are
+ * stored into textfiles.
+ * @Example:
+ * $fdb = new FileDB('/var/exampledb');
+ * $fdb->saveValue(array("user","email"),"test@example.com");
+ * # The line above will result in the following:
+ * # /var/exampledb/user/email.txt
+ * # Objects are getting saved JSON encoded.
  * @uses TextFile.php for handling text files.
  * Dev-start: 9.12.2012.
  * @author Florian Schiessl <florian@floriware.de>
- * @version 0.2
+ * @version 0.3
  */
-class FileDB implements BasicDatabase
+class FileDB implements IBasicDatabase
 {
 	/**
-	 * Contains the root folder of this database.
+	 * Contains the root path of this database.
 	 * @var string $root
 	 */
 	private $root = null;
 	
 	/**
-	 * Contains default separator for resource locator paths.
-	 * @var string $sep
-	 */
-	private $sep = '.';
-	
-	/**
-	 * Contains default file ending for textfiles.
+	 * Contains the default file ending used for value files.
 	 * @var string $file_ending
 	 */
 	private $file_ending = '.txt';
 	
 	/**
 	 * New textfile based Database.
-	 * @param string $root: Path to root folder of database. Without trailing slash. (See getRoot())
+	 * @param string $root: Path to root folder of database. Without trailing slash.
 	 * @param string $file_ending: Sets the default ending for textfiles. (Default: .txt)
-	 * @param string $rl_separator: Sets the default resource locator separator. (Default: .)
 	 */
-	public function __construct($root, $file_ending = '.txt', $rl_separator = '.')
+	public function __construct($root, $file_ending = '.txt')
 	{
 		$this->root = $root;
 		$this->file_ending = $file_ending;
-		$this->sep = $rl_separator;
-		//TODO add a function to validate the root. Like 'is existent' or 'has access'
 	}
 	
 	/**
 	 * Get value by resource locator.
-	 * @param string $resource_locator: Resource locator string.
-	 * @return string $value: on success. || boolean false: on error.
 	 * @see BasicDatabase::getValue()
-	 * @example
-	 * $ex = getValue('path.to.value');
-	 * echo $ex; // 'this is a test' (See setValue())
 	 */
 	public function getValue($resource_locator)
 	{
@@ -58,7 +52,6 @@ class FileDB implements BasicDatabase
 	
 	/**
 	 * Get value by resource locator as array.
-	 * One element/line in value
 	 * @see BasicDatabase::getValueAsArray()
 	 */
 	public function getValueAsArray($resource_locator)
@@ -69,8 +62,6 @@ class FileDB implements BasicDatabase
 	
 	/**
 	 * Get object by resource locator.
-	 * @param string $resource_locator: Resource locator string.
-	 * @return mixed $value: on success. || boolean false: on error.
 	 * @see BasicDatabase::getObject()
 	 */
 	public function getObject($resource_locator)
@@ -84,12 +75,8 @@ class FileDB implements BasicDatabase
 	}
 	
 	/**
-	 * Save value by resource locator.
-	 * @param string $resource_locator: Resource locator string.
-	 * @param string $value: Set field to $value.
-	 * @return boolean $success: True on success, false on error.
+	 * Save value for resource locator.
 	 * @see BasicDatabase::setValue()
-	 * @example setValue('path.to.value', 'this is a test');
 	 */
 	public function saveValue($resource_locator, $value)
 	{
@@ -105,13 +92,7 @@ class FileDB implements BasicDatabase
 	
 	/**
 	 * Save values from array by resource locator.
-	 * One element/line in value. Using newline (\n) in array values
-	 * WILL lead to newlines in value. Use saveObject() in order to
-	 * store Arrays.
 	 * @see BasicDatabase::saveValueFromArray()
-	 * @param string $resource_locator
-	 * @param string $value_array
-	 * @return boolean success
 	 */
 	public function saveValueFromArray($resource_locator, $value_array)
 	{
@@ -126,9 +107,7 @@ class FileDB implements BasicDatabase
 	}
 	
 	/**
-	 * Save object by resource locator. Object will be saved as JSON in File of resource Locator.
-	 * @param string $resource_locator: Resource locator string.
-	 * @param mixed $object: Object to save.
+	 * Save object by resource locator.
 	 * @see BasicDatabase::saveObject()
 	 */
 	public function saveObject($resource_locator, $object)
@@ -137,18 +116,8 @@ class FileDB implements BasicDatabase
 	}
 	
 	/**
-	 * Returns default resource locator separator.
-	 * @return string $sep: (Default: .)
-	 */
-	public function getSeparator()
-	{
-		return $this->sep;
-	}
-	
-	/**
 	 * Returns a new FileDB with given resource locator as root.
 	 * @see BasicDatabase::chroot()
-	 * @return FileDB $chrooted_filedb
 	 */
 	public function chroot($resource_locator)
 	{
@@ -157,11 +126,11 @@ class FileDB implements BasicDatabase
 	}
 	
 	/**
-	 * Returns root path to database.
+	 * Returns root path from the database.
 	 * @return string $root
 	 * @example
-	 * $newDB = new FileDB('/var/db');
-	 * echo $newDB->getRoot(); // /var/db
+	 * $newDB = new FileDB('/var/exampledb');
+	 * echo $newDB->getRoot(); // /var/exampledb
 	 */
 	public function getRoot()
 	{
@@ -179,15 +148,14 @@ class FileDB implements BasicDatabase
 	
 	/**
 	 * Creates sub folders needed for storing a file (if needed)
-	 * @param string $resource_locator
+	 * @param array $resource_locator
 	 * @return boolean $success
 	 */
 	public function createNodes($resource_locator)
 	{
-		$rl_array = $this->getSubRlArray($resource_locator);
-		foreach($rl_array as $i => $node)
+		foreach($resource_locator as $i => $node)
 		{
-			if($i == count($rl_array) - 1)
+			if($i == count($resource_locator) - 1)
 			{
 				// last node
 				return true;
@@ -215,7 +183,7 @@ class FileDB implements BasicDatabase
 	
 	/**
 	 * Returns the filename matching given resource locator.
-	 * @param string $resource_locator
+	 * @param array $resource_locator
 	 * @return string $filename
 	 */
 	public function getFileNameByRl($resource_locator)
@@ -225,32 +193,26 @@ class FileDB implements BasicDatabase
 	
 	/**
 	 * Returns sub path (on filesystem) for the node $node.
-	 * @param string $resource_locator: Resource locator string.
-	 * @param int $node: last included part of $resource_locator. (counted from the 
-	 * beginning, start 0)
+	 * @param array $resource_locator
+	 * @param int $node: last included part of $resource_locator. (counting from 0)
 	 * @return string $path: Path on filesystem for this resource locator. Full path, if
 	 * $node omitted or < 0.
 	 * 
 	 * @example
-	 * $root = /var/db
-	 * $ex = $this->getSubPathByRl('path.to.value', 1);
-	 * echo $ex; // /var/db/path/to
+	 * $root = /var/exampledb
+	 * $ex = $this->getSubPathByRl(array("path","to","value", 1);
+	 * echo $ex; // /var/exampledb/path/to
 	 */
 	public function getSubPathByRl($resource_locator, $node = -1)
 	{
-		return $this->root.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR,$this->getSubRlArray($resource_locator,$node));
+		return $this->root.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR,$this->getSubRl($resource_locator,$node));
 	}
 	
 	/**
-	 * Returns sub resource locator.
-	 * @param string $resource_locator: Resource locator string.
-	 * @param int $node: last included part of $resource_locator. (counted from the 
-	 * beginning, start 0)
-	 * @return string $new_resource_locator: input if $node omitted or < 0;
-	 * 
-	 * @example
-	 * $ex = getSubRl('very.long.path.to.special.value', 2);
-	 * echo $ex; // very.long.path
+	 * Returns sub resource locator as array.
+	 * @param array $resource_locator
+	 * @param int $node
+	 * @return array $sub_rl:
 	 */
 	public function getSubRl($resource_locator, $node = -1)
 	{
@@ -260,47 +222,13 @@ class FileDB implements BasicDatabase
 		}
 		else
 		{
-			$parts = $this->getSubRlArray($resource_locator, $node);
-			$last_part = count($parts) - 1;
-			$new_rl = '';
-			for($i = 0; $i <= $last_part; $i++)
-			{
-				if($i < $last_part)
-				{
-					$new_rl .= $parts[$i];
-				}
-				else
-				{
-					return $new_rl;
-				}
-				$new_rl .= $this->sep;
-			}
-		}
-		return $new_rl;
-	}
-	
-	/**
-	 * Returns sub resource locator as array. Same behaviour as getSubRl().
-	 * @param string $resource_locator
-	 * @param int $node
-	 * @return array $parts:
-	 */
-	public function getSubRlArray($resource_locator, $node = -1)
-	{
-		$parts = explode($this->sep, $resource_locator);
-		if($node < 0)
-		{
-			return $parts;
-		}
-		else
-		{
-			$last_part = count($parts) - 1;
+			$last_part = count($resource_locator) - 1;
 			$needed_parts = array();
 			for($i = 0; $i <= $last_part; $i++)
 			{
 				if($i <= $node && $i <= $last_part)
 				{
-					array_push($needed_parts, $parts[$i]);
+					array_push($needed_parts, $resource_locator[$i]);
 				}
 				else
 				{

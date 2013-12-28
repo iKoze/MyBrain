@@ -134,7 +134,7 @@ class TextFile
 	 */
 	public function write()
 	{
-		if($this->content != null)
+		if($this->content !== null)
 		{
 			if(file_put_contents($this->full_path, $this->content) !== false)
 			{

@@ -30,19 +30,12 @@ AutoLoad::register();
 
 // Use databases.
 $dbholder = new InstanceHolder('BasicDatabase');
-$authdb = new FileDB($fdbroot.DS.'AuthDB');
-$dbholder->addInstance('AuthDB', $authdb);
 $userdb = new FileDB($fdbroot.DS.'UserDB');
 $dbholder->addInstance('UserDB', $userdb);
 
-// Activate DBAuthentication
-$authholder = new InstanceHolder('BasicAuthentication');
-$authholder->addInstance('DBAuthentication', new DBAuthentication($authdb, 'BlowFishHash'));
-
 // Add UserManagement
-$usermanager = new UserManagement($userdb, $authholder);
+$usermanager = new UserManagement($userdb, new BlowFishHash(11));
 
 // Register the Modules to MyBrain
 $this->registerModule('dbholder', $dbholder);
-$this->registerModule('authholder', $authholder);
 $this->registerModule('UserManagement', $usermanager);

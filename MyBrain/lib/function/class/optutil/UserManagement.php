@@ -4,167 +4,104 @@
  * Provides user management.
  * Dev-start: 12.2.2013 
  * @author Florian Schiessl <florian@floriware.de>
- * @version 0.1
+ * @version 0.2
  */
 class UserManagement
 {
 	/**
-	 * Contains User Database Object
-	 * @var BasicDatabase $userdb
-	 * @example DB Layout
-	 * |- users.txt -> csv -> uid,username
-	 * |
-	 * |- 1 -> content of uid 1
-	 *    |- auth_method.txt -> current auth method for uid 1
-	 *    |- db -> Database passed to user
+	 * Contains user database object
 	 */
 	protected $userdb;
 	
 	/**
-	 * Contains all possible authentication methods.
-	 * @var InstanceHolder $authholder
+	 * Contains hash providing object for password hashing
 	 */
-	protected $authholder;
+	protected $hash;
 	
 	/**
-	 * The default separator for $userdb
-	 * @var string $sep
+	 * New UserManagement
+	 * @param IBasicDatabase $userdb: User Database
+	 * @param IBasicHash $hash: Hash providing object used for password hashing
 	 */
-	protected $sep;
-	
-	/**
-	 * New user management.
-	 * @param BasicDatabase $userdb
-	 * @param InstanceHolder $authholder: all possible authentication methods.
-	 */
-	public function __construct(BasicDatabase $userdb, InstanceHolder $authholder)
+	public function __construct(IBasicDatabase $userdb, IBasicHash $hash)
 	{
 		$this->userdb = $userdb;
-		$this->sep = $userdb->getSeparator();
-		$this->authholder = $authholder;
-	}
-	
-	// TODO add an addUser function ;)
-	
-	/**
-	 * Get user by User ID
-	 * @param number $uid
-	 * @return User $user || false on error
-	 */
-	public function getUserByUid($uid)
-	{
-		// Check if user is existent
-		if($this->userdb.getValue($uid) === false)
-		{
-			// User not existent
-			return false;
-		}
-		
-		return $this->spawnUser($uid);
-		// return user;
+		$this->hash = $hash;
 	}
 	
 	/**
-	 * Create new User object for existing by it's UID from database.
-	 * @param number $uid
-	 * @return User $user
+	 * Create a new User
+	 * @param string $uid: the user id (username)
+	 * @param string $pass: the password
+	 * @return boolean true: on success
 	 */
-	protected function spawnUser($uid)
+	public function newUser($uid, $pass)
 	{
-		$user = new User($uid, $this);
-		$auth_method = $this->userdb->getValue($uid.$this->sep.'auth_method');
-		$user->setAuthMethod($this->authholder->getInstane($auth_method));
-		$user->setDatabase($this->userdb->chroot($uid.$this->sep.'db'));
-		return $user;
+		if ($this->uidExists($uid)) return false; # User already exists
+		return $this->changePassword($uid,$pass); # Changing password for unexisting user means creating user
+	}
+	
+	// TODO: add a deluser function
+	
+	/**
+	 * Check if $pass is correct for $uid
+	 * @param string $uid
+	 * @param string $pass
+	 * @return boolean true: if correct
+	 */
+	public function authenticate($uid, $pass)
+	{
+		if (!$this->uidExists($uid)) return false; # non-existing users cannot be authenticated
+		$hashed_pw = $this->userdb->getValue(array($uid,"pass")); # get hashed password
+		$entered_pw = $this->reHashPassword($uid,$pass); # re hash user entered password with stored salt
+		return $hashed_pw === $entered_pw; # return true if password correct
 	}
 	
 	/**
-	 * Get Username by UID
-	 * @param number $uid
-	 * @return string $username
+	 * Change $pass for $uid
+	 * @param string $uid
+	 * @param string $new_pass
+	 * @return boolean true
 	 */
-	public function getUsernameByUid($uid)
+	public function changePassword($uid, $new_pass)
 	{
-		$username = $this->getArraySortedByUid();
-		return $username[$uid];
-	}
-	
-	/**
-	 * Get User ID by Username
-	 * @param string $username
-	 * @return number $uid
-	 */
-	public function getUidByUsername($username)
-	{
-		$uid = $this->getArraySortedByUsername();
-		return $uid[$username];
-	}
-	
-	/**
-	 * Gets the next free User ID
-	 * @return number $free_uid
-	 */
-	public function getFreeUid()
-	{
-		$used = array_keys($this->getArraySortedByUid());
-		sort($used, SORT_NUMERIC);
-		return end($used) + 1;
-	}
-	
-	/**
-	 * Gets an array containing all uids, indexed by usernames
-	 * @return array $uid
-	 */
-	protected function getArraySortedByUsername()
-	{
-		$uid = array();
-		foreach($this->getUserIndexAsArray() as $line)
-		{
-			$uid[$line[1]] = $line[0];
-		}
-		return $uid;
-	}
-	
-	/**
-	 * Gets an array containing all usernames, indexed by uids.
-	 * @return array $username
-	 */
-	protected function getArraySortedByUid()
-	{
-		$username = array();
-		foreach($this->getUserIndexAsArray() as $line)
-		{
-			$username[$line[0]] = $line[1];
-		}
-		return $username;
-	}
-	
-	/**
-	 * Returns the user index as array.
-	 * @return array $userindex
-	 */
-	protected function getUserIndexAsArray()
-	{
-		$content = $this->userdb->getValueAsArray('users');
-		$userindex = array();
-		foreach($content as $line)
-		{
-			$cur = explode(';',$line);
-			array_push($userindex,$cur);
-		}
-		return $userindex;
-	}
-	
-	/**
-	 * Saves settings of user object back to userdb.
-	 * @param User $user
-	 * @return boolean $success = true
-	 */
-	public function saveMe(User $user)
-	{
-		$uid = $user->getUid();
-		$auth_method = $user->getAuthMethodName();
-		$this->userdb->saveValue($uid.$this->sep.'auth_method', $auth_method);
+		$salt = $this->hash->generateSalt(); # Generate new password salt
+		$hashed_pw = $this->hash->hash($new_pass,$salt); # hash password with salt
+		$this->userdb->saveValue(array($uid,"salt"),$salt); # save salt
+		$this->userdb->saveValue(array($uid,"pass"),$hashed_pw); # save hashed password
 		return true;
+	}
+	
+	/**
+	 * Get a user associated database
+	 * @param string $uid
+	 * @return IBasicDatabase $user_db
+	 */
+	public function getUserDb($uid)
+	{
+		$this->userdb->saveValue(array($uid,"data","dummy"),null); # Creating userdb if unexisting
+		return $this->userdb->chroot(array($uid,"data"));
+	}
+	
+	/**
+	 * Re hash $pass with stored salt from $uid
+	 * @param string $uid
+	 * @param string $pass
+	 * @return string $rehashed_password
+	 */
+	public function reHashPassword($uid, $pass)
+	{
+		$salt = $this->userdb->getValue(array($uid,"salt")); # get stored salt
+		return $this->hash->hash($pass,$salt); # re hash password with salt
+	}
+	
+	/**
+	 * Check if $uid already exists
+	 * @param string $uid
+	 * @return boolean true: if exists.
+	 */
+	public function uidExists($uid)
+	{
+		return $this->userdb->getValue(array($uid,"pass")) !== false;
 	}
 }
