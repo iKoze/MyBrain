@@ -1,0 +1,19 @@
+{
+    "name": "floriware/mybrain",
+    "description": "Flos PHP framework",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Floriware\\Mybrain\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Florian Schießl",
+            "email": "florian@floriware.de"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
