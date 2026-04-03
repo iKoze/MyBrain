@@ -35,7 +35,9 @@
  * registerModule() to register your Module. Later, when you'll need your
  * module, call $Brain-> getModule().
  */
-class MyBrain
+namespace Floriware\MyBrain\Core;
+
+class Brain
 {
 	/**
 	 * Contains all loaded Modules.

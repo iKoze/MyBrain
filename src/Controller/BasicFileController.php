@@ -1,4 +1,9 @@
 <?php
+namespace Floriware\MyBrain\Controller;
+
+use Floriware\MyBrain\Interface\iURLDirector;
+use Floriware\MyBrain\Interface\iTemplateUser;
+
 class BasicFileController
 extends BasicController 
 implements iURLDirector, iTemplateUser

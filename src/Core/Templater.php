@@ -55,6 +55,10 @@
  * ~~~~~
  *
  */
+namespace Floriware\MyBrain\Core;
+
+use Floriware\MyBrain\Interface\iTemplateUser;
+
 class Templater
 {
 	/** @brief path to the template */

@@ -2,7 +2,10 @@
 /** @brief MyBrain Controller File Deliverer
  * @author Florian Schiessl <florian@floriware.de (1.11.2015)
  */
- class FileControllerDeliverer extends URLDirector
+namespace Floriware\MyBrain\Core;
+
+
+class FileControllerDeliverer extends URLDirector
  {
  	public $fsroot;
 	public $ftype;

@@ -86,6 +86,10 @@
  * controller for example.
  * 
  */
+namespace Floriware\MyBrain\Core;
+
+use Floriware\MyBrain\Interface\iURLDirector;
+
 class URLDirector implements iURLDirector
 {
 	/**

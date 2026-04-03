@@ -1,4 +1,6 @@
 <?php
+namespace Floriware\MyBrain\Controller;
+
 class CError extends BasicFileController
 {
 	public function run()

@@ -10,6 +10,12 @@
  * makes HTML content usable as DOMDocument. Use $this->meta() for meta tags
  * in your template.
  */
+namespace Floriware\MyBrain\Core;
+
+use DOMDocument;
+use DOMNode;
+use Floriware\MyBrain\Core\Templater;
+
 class HTMLTemplater
 extends Templater
 {

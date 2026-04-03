@@ -3,6 +3,8 @@
  * @brief print links, check URL's and do redirects
  * @author Florian Schießl <florian@floriware.de> (23.4.2016)
  */
+namespace Floriware\MyBrain\Core;
+
 class Linker
 {
 	/** @brief URLDirector for this Linker */

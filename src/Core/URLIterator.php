@@ -33,6 +33,10 @@
  *     this/is
  *     this
  */
+namespace Floriware\MyBrain\Core;
+
+use Iterator;
+
 class URLIterator implements Iterator
 {
 	public $url = "";

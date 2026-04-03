@@ -3,6 +3,8 @@
  * @author Florian Schiessl <florian@floriware.de> (1.11.2015)
  * @see URLDirector
  */
+namespace Floriware\MyBrain\Interface;
+
 interface iURLDirector
 {
 	/** @brief try to get result for $relativeurl
